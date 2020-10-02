@@ -84,6 +84,7 @@ Full list of options in `config.json`:
 | compression                         | String  | No         | The type of compression to apply before uploading. Supported options are `none` (default) and `gzip`. For gzipped files, the file extension will automatically be changed to `.csv.gz` for all files. |
 | naming_convention                   | String  | No         | (Default: None) Custom naming convention of the s3 key. Replaces tokens `date`, `stream`, and `timestamp` with the appropriate values. <br><br>Supports "folders" in s3 keys e.g. `folder/folder2/{stream}/export_date={date}/{timestamp}.csv`. <br><br>Honors the `s3_key_prefix`,  if set, by prepending the "filename". E.g. naming_convention = `folder1/my_file.csv` and s3_key_prefix = `prefix_` results in `folder1/prefix_my_file.csv` |
 | temp_dir                            | String  |            | (Default: platform-dependent) Directory of temporary CSV files with RECORD messages. |
+| max_file_size_mb                    | Integer | No         | (Default: 1000) Limits the size of individual files. If a stream exceeds this limit, it will automatically append an incrementing numeric sequence to each file of the stream e.g. `stream-001.csv`, `stream-002.csv`  |
 
 ### To run tests:
 
