@@ -126,6 +126,9 @@ def persist_messages(messages, config, s3_client):
                 compressed_file = utils.compress_file(filename, compression)
                 comp_ext = '.gz' if compressed_file else ''
 
+                if skip_upload:
+                    continue  # Skip S3 upload and keep local files
+
                 # upload to s3 with amended target_key
                 s3.upload_file(compressed_file or filename,
                                s3_client,
