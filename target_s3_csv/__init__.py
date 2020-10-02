@@ -39,6 +39,9 @@ def persist_messages(messages, config, s3_client):
     quotechar = config.get('quotechar', '"')
     max_file_size = config.get('max_file_size_mb', 1000) * 1000000
     compression = config.get('compression')
+    flatten   = config.get('flatten', True)
+    s3_bucket = config.get('s3_bucket')
+    skip_upload = s3_bucket == 'localhost'
 
     # Use the system specific temp directory if no custom temp_dir provided
     temp_dir = os.path.expanduser(config.get('temp_dir', tempfile.gettempdir()))
@@ -90,7 +93,7 @@ def persist_messages(messages, config, s3_client):
 
             file_is_empty = (not os.path.isfile(filename)) or os.stat(filename).st_size == 0
 
-            flattened_record = utils.flatten_record(record_to_load)
+            flattened_record = utils.flatten_record(record_to_load) if flatten else record_to_load
 
             if o['stream'] not in headers and not file_is_empty:
                 with open(filename, 'r') as csvfile:
@@ -162,9 +165,12 @@ def persist_messages(messages, config, s3_client):
         compressed_file = utils.compress_file(filename, compression)
         comp_ext = '.gz' if compressed_file else ''
 
+        if skip_upload:
+            continue  # Skip S3 upload and keep local files
+
         s3.upload_file(compressed_file or filename,
                        s3_client,
-                       config.get('s3_bucket'),
+                       s3_bucket,
                        target_key + comp_ext,
                        encryption_type=config.get('encryption_type'),
                        encryption_key=config.get('encryption_key'))
@@ -189,7 +195,7 @@ def main():
         logger.error("Invalid configuration:\n   * {}".format('\n   * '.join(config_errors)))
         sys.exit(1)
 
-    s3_client = s3.create_client(config)
+    s3_client = s3.create_client(config) if config.get('s3_bucket') != 'localhost' else None
 
     input_messages = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
     state = persist_messages(input_messages, config, s3_client)
@@ -200,3 +206,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

@@ -74,7 +74,7 @@ Full list of options in `config.json`:
 | aws_secret_access_key               | String  | No         | S3 Secret Access Key. If not provided, `AWS_SECRET_ACCESS_KEY` environment variable will be used. |
 | aws_session_token                   | String  | No         | AWS Session token. If not provided, `AWS_SESSION_TOKEN` environment variable will be used. |
 | aws_profile                         | String  | No         | AWS profile name for profile based authentication. If not provided, `AWS_PROFILE` environment variable will be used. |
-| s3_bucket                           | String  | Yes        | S3 Bucket name                                                |
+| s3_bucket                           | String  | Yes        | S3 Bucket name. Setting this to `localhost` will keep the files in temp_dir and not upload to S3.  |
 | s3_key_prefix                       | String  |            | (Default: None) A static prefix before the generated S3 key names. Using prefixes you can 
 | delimiter                           | String  |            | (Default: ',') A one-character string used to separate fields. |
 | quotechar                           | String  |            | (Default: '"') A one-character string used to quote fields containing special characters, such as the delimiter or quotechar, or which contain new-line characters. |
@@ -85,6 +85,7 @@ Full list of options in `config.json`:
 | naming_convention                   | String  | No         | (Default: None) Custom naming convention of the s3 key. Replaces tokens `date`, `stream`, and `timestamp` with the appropriate values. <br><br>Supports "folders" in s3 keys e.g. `folder/folder2/{stream}/export_date={date}/{timestamp}.csv`. <br><br>Honors the `s3_key_prefix`,  if set, by prepending the "filename". E.g. naming_convention = `folder1/my_file.csv` and s3_key_prefix = `prefix_` results in `folder1/prefix_my_file.csv` |
 | temp_dir                            | String  |            | (Default: platform-dependent) Directory of temporary CSV files with RECORD messages. |
 | max_file_size_mb                    | Integer | No         | (Default: 1000) Limits the size of individual files. If a stream exceeds this limit, it will automatically append an incrementing numeric sequence to each file of the stream e.g. `stream-001.csv`, `stream-002.csv`  |
+| flatten                             | Boolean | No         | (Default: True) Flatten json data to columns. |
 
 ### To run tests:
 
