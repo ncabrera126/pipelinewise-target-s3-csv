@@ -7,6 +7,9 @@ import json
 import re
 import collections
 import inflection
+import gzip
+import shutil
+import os
 
 from decimal import Decimal
 from datetime import datetime
@@ -143,3 +146,30 @@ def get_target_key(message, prefix=None, timestamp=None, naming_convention=None)
         filename = key.split('/')[-1]
         key = key.replace(filename, f'{prefix}{filename}')
     return key
+
+
+def compress_file(filename, compression=None):
+    compressed_file = None
+    if compression is None or compression.lower() == "none":
+        pass  # no compression
+    else:
+        if compression == "gzip":
+            compressed_file = f"{filename}.gz"
+            with open(filename, 'rb') as f_in:
+                with gzip.open(compressed_file, 'wb') as f_out:
+                    logger.info(f"Compressing file as '{compressed_file}'")
+                    shutil.copyfileobj(f_in, f_out)
+            os.remove(filename)
+        else:
+            raise NotImplementedError(
+                "Compression type '{}' is not supported. "
+                "Expected: 'none' or 'gzip'"
+                .format(compression)
+            )
+    return compressed_file
+
+
+def add_file_count(filename, counter=0):
+    root, ext = os.path.splitext(filename)
+    return root + f'-{counter:03}' + ext
+

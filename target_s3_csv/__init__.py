@@ -2,11 +2,9 @@
 
 import argparse
 import csv
-import gzip
 import io
 import json
 import os
-import shutil
 import sys
 import tempfile
 from datetime import datetime
@@ -35,9 +33,12 @@ def persist_messages(messages, config, s3_client):
     key_properties = {}
     headers = {}
     validators = {}
+    file_counts = {}
 
     delimiter = config.get('delimiter', ',')
     quotechar = config.get('quotechar', '"')
+    max_file_size = config.get('max_file_size_mb', 1000) * 1000000
+    compression = config.get('compression')
 
     # Use the system specific temp directory if no custom temp_dir provided
     temp_dir = os.path.expanduser(config.get('temp_dir', tempfile.gettempdir()))
@@ -112,6 +113,24 @@ def persist_messages(messages, config, s3_client):
 
                 writer.writerow(flattened_record)
 
+            if os.stat(filename).st_size > max_file_size:
+                cnt = file_counts[filename] = file_counts.get(filename,0) + 1
+                # Add counter sequence to filename
+                rename_file = utils.add_file_count(filename, cnt)
+                os.rename(filename, rename_file)
+                filename = rename_file
+
+                compressed_file = utils.compress_file(filename, compression)
+                comp_ext = '.gz' if compressed_file else ''
+
+                # upload to s3 with amended target_key
+                s3.upload_file(compressed_file or filename,
+                               s3_client,
+                               config.get('s3_bucket'),
+                               utils.add_file_count(target_key,cnt) + comp_ext,
+                               encryption_type=config.get('encryption_type'),
+                               encryption_key=config.get('encryption_key'))
+
             state = None
         elif message_type == 'STATE':
             logger.debug('Setting state to {}'.format(o['value']))
@@ -133,33 +152,23 @@ def persist_messages(messages, config, s3_client):
 
     # Upload created CSV files to S3
     for filename, target_key in filenames:
-        compressed_file = None
-        if config.get("compression") is None or config["compression"].lower() == "none":
-            pass  # no compression
-        else:
-            if config["compression"] == "gzip":
-                compressed_file = f"{filename}.gz"
-                with open(filename, 'rb') as f_in:
-                    with gzip.open(compressed_file, 'wb') as f_out:
-                        logger.info(f"Compressing file as '{compressed_file}'")
-                        shutil.copyfileobj(f_in, f_out)
-            else:
-                raise NotImplementedError(
-                    "Compression type '{}' is not supported. "
-                    "Expected: 'none' or 'gzip'"
-                    .format(config["compression"])
-                )
+        if not os.path.isfile(filename):
+            continue
+
+        cnt = file_counts.get(filename,0) + 1
+        if cnt > 1:
+            target_key = utils.add_file_count(target_key, cnt)
+
+        compressed_file = utils.compress_file(filename, compression)
+        comp_ext = '.gz' if compressed_file else ''
+
         s3.upload_file(compressed_file or filename,
                        s3_client,
                        config.get('s3_bucket'),
-                       target_key,
+                       target_key + comp_ext,
                        encryption_type=config.get('encryption_type'),
                        encryption_key=config.get('encryption_key'))
 
-        # Remove the local file(s)
-        os.remove(filename)
-        if compressed_file:
-            os.remove(compressed_file)
 
     return state
 

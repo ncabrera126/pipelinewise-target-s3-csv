@@ -75,3 +75,5 @@ def upload_file(filename, s3_client, bucket, s3_key,
         .format(filename, bucket, s3_key, encryption_desc)
     )
     s3_client.upload_file(filename, bucket, s3_key, ExtraArgs=encryption_args)
+    os.remove(filename)
+
