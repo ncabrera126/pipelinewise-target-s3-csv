@@ -67,7 +67,8 @@ def persist_messages(messages, config, s3_client):
 
             # Validate record
             try:
-                validators[o['stream']].validate(utils.float_to_decimal(o['record']))
+                # validators[o['stream']].validate(utils.float_to_decimal(o['record']))
+                pass # Skipping validation as it slows things way down
             except Exception as ex:
                 if type(ex).__name__ == "InvalidOperation":
                     logger.error("Data validation failed and cannot load to destination. RECORD: {}\n"
