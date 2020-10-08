@@ -165,7 +165,7 @@ def persist_messages(messages, config, s3_client):
                     filenames.append((filename, target_key))
 
                 with open(filename, 'w+') as f:
-                    f.write(schemas[stream])
+                    f.write(json.dumps(schemas[stream]))
             
         elif message_type == 'ACTIVATE_VERSION':
             logger.debug('ACTIVATE_VERSION message')
