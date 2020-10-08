@@ -154,6 +154,15 @@ def persist_messages(messages, config, s3_client):
             
             filename = o['stream'] + '-schema.json'
             filename = os.path.expanduser(os.path.join(temp_dir, filename))
+            
+            target_key = utils.get_target_key(o,
+                                  prefix=config.get('s3_key_prefix', ''),
+                                  timestamp=now,
+                                  naming_convention=config.get('schema_naming_convention'))
+ 
+            if not (filename, target_key) in filenames:
+                filenames.append((filename, target_key))
+            
             with open(filename, 'w+') as f:
                 f.write(schemas[stream])
             
