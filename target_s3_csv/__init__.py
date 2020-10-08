@@ -152,19 +152,20 @@ def persist_messages(messages, config, s3_client):
             validators[stream] = Draft7Validator(schema, format_checker=FormatChecker())
             key_properties[stream] = o['key_properties']
             
-            filename = o['stream'] + '-schema.json'
-            filename = os.path.expanduser(os.path.join(temp_dir, filename))
-            
-            target_key = utils.get_target_key(o,
-                                  prefix=config.get('s3_key_prefix', ''),
-                                  timestamp=now,
-                                  naming_convention=config.get('schema_naming_convention'))
- 
-            if not (filename, target_key) in filenames:
-                filenames.append((filename, target_key))
-            
-            with open(filename, 'w+') as f:
-                f.write(schemas[stream])
+            if config.get('schema_naming_convention'):
+                filename = o['stream'] + '-schema.json'
+                filename = os.path.expanduser(os.path.join(temp_dir, filename))
+
+                target_key = utils.get_target_key(o,
+                                      prefix=config.get('s3_key_prefix', ''),
+                                      timestamp=now,
+                                      naming_convention=config.get('schema_naming_convention'))
+
+                if not (filename, target_key) in filenames:
+                    filenames.append((filename, target_key))
+
+                with open(filename, 'w+') as f:
+                    f.write(schemas[stream])
             
         elif message_type == 'ACTIVATE_VERSION':
             logger.debug('ACTIVATE_VERSION message')
