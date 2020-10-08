@@ -151,6 +151,11 @@ def persist_messages(messages, config, s3_client):
             schema = utils.float_to_decimal(o['schema'])
             validators[stream] = Draft7Validator(schema, format_checker=FormatChecker())
             key_properties[stream] = o['key_properties']
+            
+            filename = 'schema.json'
+            with open(filename, 'w+') as f:
+                f.write(o['stream'])
+            
         elif message_type == 'ACTIVATE_VERSION':
             logger.debug('ACTIVATE_VERSION message')
         else:
@@ -210,4 +215,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
