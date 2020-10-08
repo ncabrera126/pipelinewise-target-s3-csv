@@ -152,7 +152,7 @@ def persist_messages(messages, config, s3_client):
             validators[stream] = Draft7Validator(schema, format_checker=FormatChecker())
             key_properties[stream] = o['key_properties']
             
-            filename = 'schema.json'
+            filename = o['stream'] + '-schema.json'
             with open(filename, 'w+') as f:
                 f.write(o['stream'])
             
