@@ -174,6 +174,12 @@ def add_file_count(filename, counter=0):
     return root + f'-{counter:03}' + ext
 
 
+def decimal_default(obj):
+    if isinstance(obj, Decimal):
+        x = str(obj)
+    return x
+
+
 def process_record(d, sep='__'):
     """
     """
