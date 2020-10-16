@@ -95,7 +95,9 @@ def persist_messages(messages, config, s3_client):
             file_is_empty = (not os.path.isfile(filename)) or os.stat(filename).st_size == 0
 
             flattened_record = utils.flatten_record(record_to_load) if flatten else record_to_load
-
+            
+            flattened_record = utils.process_record(flattened_record)
+            
             if o['stream'] not in headers and not file_is_empty:
                 with open(filename, 'r') as csvfile:
                     reader = csv.reader(csvfile,
