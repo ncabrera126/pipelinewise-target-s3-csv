@@ -187,7 +187,7 @@ def process_record(d, sep='__'):
     for k in sorted(d.keys()):
         v = d[k]
         if isinstance(v, collections.MutableMapping):
-            items[k] = json.dumps(v)
+            items[k] = json.dumps(v, default=decimal_default)
         else:
             items[k] = v
     return items
