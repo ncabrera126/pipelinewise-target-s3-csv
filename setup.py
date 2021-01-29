@@ -36,3 +36,5 @@ setup(name="pipelinewise-target-s3-csv",
       package_data = {},
       include_package_data=True,
 )
+
+print("hello there")
